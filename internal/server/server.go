@@ -3,7 +3,7 @@ package server
 import (
 	"net"
 
-	"github.com/yourusername/redis-server/internal/handler"
+	"github.com/Vaivaswat2244/redis-server/internal/handler"
 )
 
 type Server struct {

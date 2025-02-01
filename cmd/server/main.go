@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/yourusername/redis-server/internal/server"
+	"github.com/Vaivaswat2244/redis-server/internal/server"
 )
 
 func main() {
