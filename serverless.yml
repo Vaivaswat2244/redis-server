@@ -1,0 +1,78 @@
+#
+# Welcome to the Serverless Framework!
+#
+# This file is the main configuration file for your service.
+# It's blessed with code completion and hints in supported editors.
+#
+# For full config options, check the docs:
+#    https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml
+#
+# Happy Coding!
+#
+
+service: my-awesome-api
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'} # Default stage is 'dev'
+  
+  # Environment variables that will be available to all your functions
+  environment:
+    USER_TABLE_NAME: ${self:custom.userTableName}
+    REGION: ${self:provider.region}
+
+  # IAM role statements that grant your functions permissions to access AWS resources
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:Query"
+            - "dynamodb:Scan"
+            - "dynamodb:GetItem"
+            - "dynamodb:PutItem"
+          Resource: "arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.userTableName}"
+
+functions:
+  # This function handles creating a new user
+  createUser:
+    handler: src/handlers/users.createUser
+    events:
+      - httpApi:
+          path: /users
+          method: post
+          
+  # This function retrieves a user by their ID
+  getUser:
+    handler: src/handlers/users.getUser
+    events:
+      - httpApi:
+          path: /users/{userId}
+          method: get
+
+resources:
+  # This section defines the AWS resources your service needs, like DynamoDB tables
+  Resources:
+    UserTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.userTableName}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+custom:
+  # Custom variables that can be reused throughout the file
+  userTableName: 'users-table-${sls:stage}'
+
+plugins:
+  - serverless-offline # For local development and testing
+  - serverless-iam-roles-per-function
